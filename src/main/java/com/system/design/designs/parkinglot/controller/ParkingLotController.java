@@ -5,7 +5,8 @@ import com.system.design.designs.parkinglot.dto.CreateParkingLotRequest;
 import com.system.design.designs.parkinglot.dto.ParkVehicleRequest;
 import com.system.design.designs.parkinglot.dto.ParkingLotDTO;
 import com.system.design.designs.parkinglot.dto.ParkingTicketDTO;
-import com.system.design.designs.parkinglot.service.ParkingLotService;
+import com.system.design.designs.parkinglot.service.ParkingLotManagementService;
+import com.system.design.designs.parkinglot.service.VehicleParkingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -32,7 +33,8 @@ import java.util.List;
 @Tag(name = "Parking Lot Management", description = "APIs for managing parking lots, vehicles, and tickets")
 public class ParkingLotController {
     
-    private final ParkingLotService parkingLotService;
+    private final ParkingLotManagementService parkingLotManagementService;
+    private final VehicleParkingService vehicleParkingService;
     
     /**
      * Create a new parking lot
@@ -45,7 +47,7 @@ public class ParkingLotController {
         
         log.info("Creating parking lot: {}", request.getName());
         
-        ParkingLotDTO parkingLot = parkingLotService.createParkingLot(request);
+        ParkingLotDTO parkingLot = parkingLotManagementService.createParkingLot(request);
         
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Parking lot created successfully", parkingLot));
@@ -61,7 +63,7 @@ public class ParkingLotController {
         
         log.info("Fetching parking lot with ID: {}", id);
         
-        ParkingLotDTO parkingLot = parkingLotService.getParkingLotById(id);
+        ParkingLotDTO parkingLot = parkingLotManagementService.getParkingLotById(id);
         
         return ResponseEntity.ok(ApiResponse.success(parkingLot));
     }
@@ -75,7 +77,7 @@ public class ParkingLotController {
         
         log.info("Fetching all parking lots");
         
-        List<ParkingLotDTO> parkingLots = parkingLotService.getAllParkingLots();
+        List<ParkingLotDTO> parkingLots = parkingLotManagementService.getAllParkingLots();
         
         return ResponseEntity.ok(ApiResponse.success("Parking lots retrieved successfully", parkingLots));
     }
@@ -89,7 +91,7 @@ public class ParkingLotController {
         
         log.info("Fetching available parking lots");
         
-        List<ParkingLotDTO> parkingLots = parkingLotService.getParkingLotsWithAvailableSpots();
+        List<ParkingLotDTO> parkingLots = parkingLotManagementService.getParkingLotsWithAvailableSpots();
         
         return ResponseEntity.ok(ApiResponse.success("Available parking lots retrieved successfully", parkingLots));
     }
@@ -104,7 +106,7 @@ public class ParkingLotController {
         
         log.info("Parking vehicle: {}", request.getLicensePlate());
         
-        ParkingTicketDTO ticket = parkingLotService.parkVehicle(request);
+        ParkingTicketDTO ticket = vehicleParkingService.parkVehicle(request);
         
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Vehicle parked successfully", ticket));
@@ -120,7 +122,7 @@ public class ParkingLotController {
         
         log.info("Processing exit for ticket: {}", ticketNumber);
         
-        ParkingTicketDTO ticket = parkingLotService.exitVehicle(ticketNumber);
+        ParkingTicketDTO ticket = vehicleParkingService.exitVehicle(ticketNumber);
         
         return ResponseEntity.ok(ApiResponse.success("Vehicle exit processed successfully", ticket));
     }
@@ -136,9 +138,9 @@ public class ParkingLotController {
         
         log.info("Processing payment for ticket: {} with amount: {}", ticketNumber, amount);
         
-        ParkingTicketDTO ticket = parkingLotService.processPayment(ticketNumber, amount);
-        
-        return ResponseEntity.ok(ApiResponse.success("Payment processed successfully", ticket));
+        // Note: Payment processing is removed from this controller as it should be a separate service
+        // For now, we'll throw an exception to indicate this needs to be implemented
+        throw new UnsupportedOperationException("Payment processing should be handled by a separate Payment Service");
     }
     
     /**
@@ -151,7 +153,7 @@ public class ParkingLotController {
         
         log.info("Fetching ticket: {}", ticketNumber);
         
-        ParkingTicketDTO ticket = parkingLotService.getTicketByTicketNumber(ticketNumber);
+        ParkingTicketDTO ticket = vehicleParkingService.getTicketByTicketNumber(ticketNumber);
         
         return ResponseEntity.ok(ApiResponse.success(ticket));
     }
@@ -166,7 +168,7 @@ public class ParkingLotController {
         
         log.info("Fetching tickets for parking lot: {}", parkingLotId);
         
-        List<ParkingTicketDTO> tickets = parkingLotService.getTicketsByParkingLotId(parkingLotId);
+        List<ParkingTicketDTO> tickets = vehicleParkingService.getTicketsByParkingLotId(parkingLotId);
         
         return ResponseEntity.ok(ApiResponse.success("Tickets retrieved successfully", tickets));
     }
@@ -181,7 +183,7 @@ public class ParkingLotController {
         
         log.info("Fetching active tickets for license plate: {}", licensePlate);
         
-        List<ParkingTicketDTO> tickets = parkingLotService.getActiveTicketsByLicensePlate(licensePlate);
+        List<ParkingTicketDTO> tickets = vehicleParkingService.getActiveTicketsByLicensePlate(licensePlate);
         
         return ResponseEntity.ok(ApiResponse.success("Active tickets retrieved successfully", tickets));
     }
@@ -196,9 +198,8 @@ public class ParkingLotController {
         
         log.info("Calculating fee for ticket: {}", ticketNumber);
         
-        BigDecimal fee = parkingLotService.calculateParkingFee(ticketNumber);
-        
-        return ResponseEntity.ok(ApiResponse.success("Parking fee calculated successfully", fee));
+        // Note: Fee calculation logic should be moved to pricing service
+        throw new UnsupportedOperationException("Fee calculation should be handled by the Pricing Service");
     }
     
     /**
